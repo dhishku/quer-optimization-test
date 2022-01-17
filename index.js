@@ -21,6 +21,17 @@ app.get('/authToken', async (req, res) => {
 });
 app.get('/welcome', [auth], async (req, res) => {
 
+  const trader = await Trader.findById(req.decodedToken._id)
+    .populate({
+      path: 'myPortfolios',
+      populate: {
+        path: 'myFollowersLog orderGroups.orders trader portfolioProgress'
+      }
+    });
+  if (!trader) {
+    return res.status(404).send('Trader not found.');
+  }
+
   const getPortfolios = (groupName) => SortedPortfolioArray.findOne({ name: groupName })
   .populate({
     path: 'sortedPortfolios',
@@ -33,7 +44,6 @@ app.get('/welcome', [auth], async (req, res) => {
 
   const bestEquity = await getPortfolios('bestEquity');
   const bestEquityCount = await countPortfolios('bestEquity');
-  const trader = {req};
   const formattedBestEquity = [];
   for (i = 0; i < bestEquity.sortedPortfolios.length; i++) {
     formattedBestEquity.push(await formatPortfolioResponse(bestEquity.sortedPortfolios[i], trader));
