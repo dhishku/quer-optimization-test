@@ -11,18 +11,7 @@ const auth = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, config.get('jwtPrivateKey'));
     req.decodedToken = decoded;
-    const trader = await Trader.findById(decoded._id)
-      .populate({
-        path: 'myPortfolios',
-        populate: {
-          path: 'myFollowersLog orderGroups.orders trader portfolioProgress'
-        }
-      });
-    if (!trader) {
-      return res.status(404).send('Trader not found.');
-    }
 
-    req.trader = trader;
     return next();
   } catch (error) {
     return res.status(403).send(error.message);
